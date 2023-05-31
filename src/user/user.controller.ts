@@ -34,7 +34,7 @@ export class UserController {
   ) {
     const user = await this.userService.login(loginUserDto);
     session.user = { id: user.id, role: user.role };
-    return { data: 'login success' };
+    return 'login success';
   }
 
   @Post('/logout')
@@ -42,7 +42,7 @@ export class UserController {
     if (session.user) {
       delete session.user;
     }
-    return { data: 'logout success' };
+    return 'logout success';
   }
 
   @Get()

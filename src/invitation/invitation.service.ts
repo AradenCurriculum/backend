@@ -20,6 +20,6 @@ export class InvitationService {
     const invitation = await this.prisma.inviteCode.delete({
       where: { id },
     });
-    return { data: invitation.id === id };
+    return invitation.id === id;
   }
 }

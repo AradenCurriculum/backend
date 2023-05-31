@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import * as session from 'express-session';
 
 import { AppModule } from './app.module';
+import { ResponseInterceptor } from './common/response.interceptor';
 
 const prisma = new PrismaClient();
 
@@ -18,6 +19,8 @@ async function bootstrap() {
       cookie: { maxAge: null }, // 以 cookie 形式保存在客户端的 session 票据的配置项
     }),
   );
+
+  app.useGlobalInterceptors(new ResponseInterceptor());
 
   await app.listen(3000);
 }
