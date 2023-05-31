@@ -1,9 +1,10 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { UserModule } from './user/user.module';
+import { InvitationModule } from './invitation/invitation.module';
 
 @Module({
-  imports: [UserModule],
+  imports: [UserModule, InvitationModule],
 })
 export class AppModule {
   static registerGlobalService(config: {

@@ -18,7 +18,7 @@ export class UserService {
   }
 
   async create(createUserDto: CreateUserDto) {
-    if (this.findUser(createUserDto.username)) {
+    if (await this.findUser(createUserDto.username)) {
       throw new HttpException('Repetitive Username', HttpStatus.BAD_REQUEST);
     }
 
@@ -28,15 +28,20 @@ export class UserService {
       },
     });
 
-    // if (!invitation || invitation.used) {
-    //   throw new HttpException('Invite Code Not Exist', HttpStatus.BAD_REQUEST);
-    // }
+    if (!invitation || invitation.used) {
+      throw new HttpException('Invite Code Not Exist', HttpStatus.BAD_REQUEST);
+    }
+
+    await this.prisma.inviteCode.update({
+      where: { id: invitation.id },
+      data: { used: true },
+    });
 
     delete createUserDto.inviteCode;
     createUserDto.password = MD5(createUserDto.password).toString();
 
     const user = await this.prisma.user.create({
-      data: { ...createUserDto, role: 'admin' }, //invitation.role },
+      data: { ...createUserDto, role: invitation.role },
     });
 
     return user;
