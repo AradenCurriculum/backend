@@ -19,7 +19,7 @@ export class UserService {
 
   async create(createUserDto: CreateUserDto) {
     if (await this.findUser(createUserDto.username)) {
-      throw new HttpException('Repetitive Username', HttpStatus.BAD_REQUEST);
+      throw new HttpException('RepetitiveUsername', HttpStatus.BAD_REQUEST);
     }
 
     const invitation = await this.prisma.inviteCode.findUnique({
@@ -29,7 +29,7 @@ export class UserService {
     });
 
     if (!invitation || invitation.used) {
-      throw new HttpException('Invite Code Not Exist', HttpStatus.BAD_REQUEST);
+      throw new HttpException('InviteCodeNotExist', HttpStatus.BAD_REQUEST);
     }
 
     await this.prisma.inviteCode.update({
@@ -51,11 +51,11 @@ export class UserService {
     const user = await this.findUser(loginUserDto.username);
 
     if (!user) {
-      throw new HttpException('Username Not Exist', HttpStatus.NOT_FOUND);
+      throw new HttpException('UsernameNotExist', HttpStatus.NOT_FOUND);
     }
 
     if (user.password !== MD5(loginUserDto.password).toString()) {
-      throw new HttpException('Password Error', HttpStatus.BAD_REQUEST);
+      throw new HttpException('PasswordError', HttpStatus.BAD_REQUEST);
     }
 
     await this.update(user.id, { loginTime: new Date() });
@@ -65,7 +65,7 @@ export class UserService {
 
   async update(id: string, updateUserDto: UpdateUserDto) {
     if (updateUserDto.username && this.findUser(updateUserDto.username)) {
-      throw new HttpException('Repetitive Username', HttpStatus.BAD_REQUEST);
+      throw new HttpException('RepetitiveUsername', HttpStatus.BAD_REQUEST);
     }
 
     const updatedUser = await this.prisma.user.update({
@@ -78,13 +78,5 @@ export class UserService {
 
   findAll() {
     return this.prisma.user.findMany();
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
   }
 }
