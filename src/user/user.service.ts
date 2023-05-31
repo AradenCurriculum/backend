@@ -58,14 +58,6 @@ export class UserService {
     return user;
   }
 
-  findAll() {
-    return this.prisma.user.findMany();
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
-
   async update(id: string, updateUserDto: UpdateUserDto) {
     if (updateUserDto.username && this.findUser(updateUserDto.username)) {
       throw new HttpException('Repetitive Username', HttpStatus.BAD_REQUEST);
@@ -77,6 +69,14 @@ export class UserService {
     });
 
     return updatedUser;
+  }
+
+  findAll() {
+    return this.prisma.user.findMany();
+  }
+
+  findOne(id: number) {
+    return `This action returns a #${id} user`;
   }
 
   remove(id: number) {
