@@ -11,7 +11,25 @@ datasource db {
 }
 
 model User {
-  id       String @id @default(uuid())
-  username String
-  password String
+  id           String       @id @default(uuid())
+  username     String
+  password     String
+  email        String
+  role         String
+  registerTime DateTime     @default(now())
+  loginTime    DateTime     @default(now())
+  inviteCodes  InviteCode[]
+}
+
+model InviteCode {
+  id      Int    @id @default(autoincrement())
+  code    String
+  owner   User   @relation(fields: [ownerId], references: [id])
+  ownerId String
+}
+
+model Contact {
+  id        Int    @id @default(autoincrement())
+  user_id   String
+  friend_id String
 }

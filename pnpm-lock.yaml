@@ -19,6 +19,7 @@ specifiers:
   eslint-plugin-prettier: ^4.0.0
   jest: 29.5.0
   prettier: ^2.3.2
+  prisma: ^4.14.1
   reflect-metadata: ^0.1.13
   rxjs: ^7.2.0
   source-map-support: ^0.5.20
@@ -40,7 +41,7 @@ devDependencies:
   '@nestjs/cli': registry.npmmirror.com/@nestjs/cli/9.5.0
   '@nestjs/schematics': registry.npmmirror.com/@nestjs/schematics/9.2.0_typescript@4.9.5
   '@nestjs/testing': registry.npmmirror.com/@nestjs/testing/9.4.2_kocaqb2lzbsxwzhsvtfaayayki
-  '@prisma/client': registry.npmmirror.com/@prisma/client/4.14.1
+  '@prisma/client': registry.npmmirror.com/@prisma/client/4.14.1_prisma@4.14.1
   '@types/express': registry.npmmirror.com/@types/express/4.17.17
   '@types/jest': registry.npmmirror.com/@types/jest/29.5.0
   '@types/node': registry.npmmirror.com/@types/node/18.15.11
@@ -52,6 +53,7 @@ devDependencies:
   eslint-plugin-prettier: registry.npmmirror.com/eslint-plugin-prettier/4.2.1_xcqkel4mpum3npntysob2xmn54
   jest: registry.npmmirror.com/jest/29.5.0_rrli7kzx2akox3oq6aahu3rvje
   prettier: registry.npmmirror.com/prettier/2.8.8
+  prisma: registry.npmmirror.com/prisma/4.14.1
   source-map-support: registry.npmmirror.com/source-map-support/0.5.21
   supertest: registry.npmmirror.com/supertest/6.3.3
   ts-jest: registry.npmmirror.com/ts-jest/29.0.5_doipufordlnvh5g4adbwayvyvy
@@ -1220,8 +1222,9 @@ packages:
     transitivePeerDependencies:
       - encoding
 
-  registry.npmmirror.com/@prisma/client/4.14.1:
+  registry.npmmirror.com/@prisma/client/4.14.1_prisma@4.14.1:
     resolution: {integrity: sha512-TZIswkeX1ccsHG/eN2kICzg/csXll0osK3EHu1QKd8VJ3XLcXozbNELKkCNfsCUvKJAwPdDtFCzF+O+raIVldw==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@prisma/client/-/client-4.14.1.tgz}
+    id: registry.npmmirror.com/@prisma/client/4.14.1
     name: '@prisma/client'
     version: 4.14.1
     engines: {node: '>=14.17'}
@@ -1233,12 +1236,20 @@ packages:
         optional: true
     dependencies:
       '@prisma/engines-version': registry.npmmirror.com/@prisma/engines-version/4.14.0-67.d9a4c5988f480fa576d43970d5a23641aa77bc9c
+      prisma: registry.npmmirror.com/prisma/4.14.1
     dev: true
 
   registry.npmmirror.com/@prisma/engines-version/4.14.0-67.d9a4c5988f480fa576d43970d5a23641aa77bc9c:
     resolution: {integrity: sha512-3jum8/YSudeSN0zGW5qkpz+wAN2V/NYCQ+BPjvHYDfWatLWlQkqy99toX0GysDeaUoBIJg1vaz2yKqiA3CFcQw==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@prisma/engines-version/-/engines-version-4.14.0-67.d9a4c5988f480fa576d43970d5a23641aa77bc9c.tgz}
     name: '@prisma/engines-version'
     version: 4.14.0-67.d9a4c5988f480fa576d43970d5a23641aa77bc9c
+    dev: true
+
+  registry.npmmirror.com/@prisma/engines/4.14.1:
+    resolution: {integrity: sha512-APqFddPVHYmWNKqc+5J5SqrLFfOghKOLZxobmguDUacxOwdEutLsbXPVhNnpFDmuQWQFbXmrTTPoRrrF6B1MWA==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@prisma/engines/-/engines-4.14.1.tgz}
+    name: '@prisma/engines'
+    version: 4.14.1
+    requiresBuild: true
     dev: true
 
   registry.npmmirror.com/@sinclair/typebox/0.25.24:
@@ -5069,6 +5080,17 @@ packages:
       '@jest/schemas': registry.npmmirror.com/@jest/schemas/29.4.3
       ansi-styles: registry.npmmirror.com/ansi-styles/5.2.0
       react-is: registry.npmmirror.com/react-is/18.2.0
+    dev: true
+
+  registry.npmmirror.com/prisma/4.14.1:
+    resolution: {integrity: sha512-z6hxzTMYqT9SIKlzD08dhzsLUpxjFKKsLpp5/kBDnSqiOjtUyyl/dC5tzxLcOa3jkEHQ8+RpB/fE3w8bgNP51g==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/prisma/-/prisma-4.14.1.tgz}
+    name: prisma
+    version: 4.14.1
+    engines: {node: '>=14.17'}
+    hasBin: true
+    requiresBuild: true
+    dependencies:
+      '@prisma/engines': registry.npmmirror.com/@prisma/engines/4.14.1
     dev: true
 
   registry.npmmirror.com/process-nextick-args/2.0.1:
