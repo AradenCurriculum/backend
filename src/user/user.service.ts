@@ -2,12 +2,24 @@ import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaClient } from '@prisma/client';
+import { LoginUserDto } from './dto/login-user.dto';
 
 @Injectable()
 export class UserService {
   @Inject('PrismaClient') private prisma: PrismaClient;
 
+  private async findUser(username: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { username },
+    });
+    return user;
+  }
+
   async create(createUserDto: CreateUserDto) {
+    if (this.findUser(createUserDto.username)) {
+      throw new HttpException('Repetitive Username', HttpStatus.BAD_REQUEST);
+    }
+
     const invitation = await this.prisma.inviteCode.findUnique({
       where: {
         code: createUserDto.inviteCode,
@@ -27,6 +39,22 @@ export class UserService {
     return user;
   }
 
+  async login(loginUserDto: LoginUserDto) {
+    const user = await this.findUser(loginUserDto.username);
+
+    if (!user) {
+      throw new HttpException('Username Not Exist', HttpStatus.NOT_FOUND);
+    }
+
+    if (user.password !== loginUserDto.password) {
+      throw new HttpException('Password Error', HttpStatus.BAD_REQUEST);
+    }
+
+    await this.update(user.id, { loginTime: new Date() });
+
+    return user;
+  }
+
   findAll() {
     return this.prisma.user.findMany();
   }
@@ -35,8 +63,17 @@ export class UserService {
     return `This action returns a #${id} user`;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    if (updateUserDto.username && this.findUser(updateUserDto.username)) {
+      throw new HttpException('Repetitive Username', HttpStatus.BAD_REQUEST);
+    }
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id },
+      data: updateUserDto,
+    });
+
+    return updatedUser;
   }
 
   remove(id: number) {
