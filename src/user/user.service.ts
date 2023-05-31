@@ -1,7 +1,9 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { PrismaClient } from '@prisma/client';
+import { MD5 } from 'crypto-js';
+
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { PrismaClient } from '@prisma/client';
 import { LoginUserDto } from './dto/login-user.dto';
 
 @Injectable()
@@ -31,6 +33,7 @@ export class UserService {
     // }
 
     delete createUserDto.inviteCode;
+    createUserDto.password = MD5(createUserDto.password).toString();
 
     const user = await this.prisma.user.create({
       data: { ...createUserDto, role: 'admin' }, //invitation.role },
@@ -46,7 +49,7 @@ export class UserService {
       throw new HttpException('Username Not Exist', HttpStatus.NOT_FOUND);
     }
 
-    if (user.password !== loginUserDto.password) {
+    if (user.password !== MD5(loginUserDto.password).toString()) {
       throw new HttpException('Password Error', HttpStatus.BAD_REQUEST);
     }
 
