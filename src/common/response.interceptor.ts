@@ -12,12 +12,12 @@ export class ResponseInterceptor<T = any> implements NestInterceptor {
     return next.handle().pipe(
       map((data) => {
         /**
-         * 如果我只返回了一个字符串，说明数据体部分并不重要，可以直接用 null
+         * 如果我只返回了一个字符串，说明数据体部分并不重要，可以直接用 空对象 表示真值
          * 如果我返回的是一个对象，想要特殊的信息提示一定会在其中加入 message 属性，不想要提示的话此属性也没什么意义了
          */
         if (typeof data === 'string') {
           return {
-            data: null,
+            data: {},
             message: data,
             statusCode: 0,
           };
