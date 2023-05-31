@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaClient } from '@prisma/client';
@@ -7,8 +7,24 @@ import { PrismaClient } from '@prisma/client';
 export class UserService {
   @Inject('PrismaClient') private prisma: PrismaClient;
 
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  async create(createUserDto: CreateUserDto) {
+    const invitation = await this.prisma.inviteCode.findUnique({
+      where: {
+        code: createUserDto.inviteCode,
+      },
+    });
+
+    // if (!invitation || invitation.used) {
+    //   throw new HttpException('Invite Code Not Exist', HttpStatus.BAD_REQUEST);
+    // }
+
+    delete createUserDto.inviteCode;
+
+    const user = await this.prisma.user.create({
+      data: { ...createUserDto, role: 'admin' }, //invitation.role },
+    });
+
+    return user;
   }
 
   findAll() {

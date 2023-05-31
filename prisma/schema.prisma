@@ -15,17 +15,19 @@ model User {
   username     String
   password     String
   email        String
-  role         String
+  role         String       @default("user")
   registerTime DateTime     @default(now())
   loginTime    DateTime     @default(now())
   inviteCodes  InviteCode[]
 }
 
 model InviteCode {
-  id      Int    @id @default(autoincrement())
-  code    String
-  owner   User   @relation(fields: [ownerId], references: [id])
+  id      Int     @id @default(autoincrement())
+  code    String  @unique @default(uuid())
+  owner   User    @relation(fields: [ownerId], references: [id])
   ownerId String
+  role    String  @default("user")
+  used    Boolean @default(false)
 }
 
 model Contact {
