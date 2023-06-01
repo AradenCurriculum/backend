@@ -6,6 +6,8 @@ import {
   UseGuards,
   Session,
   Patch,
+  Delete,
+  Param,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { LoginUserDto } from './dto/login-user.dto';
@@ -72,9 +74,18 @@ export class UserController {
     return { message: 'EditSuccess', ...user };
   }
 
-  @Get()
+  @Get('/userlist')
   @Roles('admin')
-  findAll() {
-    return this.userService.findAll();
+  findMany() {
+    return this.userService.findMany();
+  }
+
+  @Delete('/:id')
+  @Roles('admin')
+  remove(@Session() session: UserSession, @Param('id') id: string) {
+    if (id === session.user.id) {
+      return { message: 'DeleteSelf' };
+    }
+    return this.userService.remove(id);
   }
 }

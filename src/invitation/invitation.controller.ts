@@ -31,7 +31,7 @@ export class InvitationController {
     );
   }
 
-  @Get('/all')
+  @Get('/invitelist')
   @Roles('admin')
   findAll() {
     return this.invitationService.findAll();

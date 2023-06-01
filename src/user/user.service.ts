@@ -87,7 +87,24 @@ export class UserService {
     return this.prisma.user.findUnique({ where: { id } });
   }
 
-  findAll() {
-    return this.prisma.user.findMany();
+  findMany() {
+    return this.prisma.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        role: true,
+        registerTime: true,
+        loginTime: true,
+      },
+      orderBy: {
+        registerTime: 'desc',
+      },
+    });
+  }
+
+  async remove(id: string) {
+    const user = await this.prisma.user.delete({ where: { id } });
+    return { message: user.id === id ? 'DeleteSuccess' : '' };
   }
 }

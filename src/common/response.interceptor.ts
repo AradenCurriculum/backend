@@ -21,6 +21,12 @@ export class ResponseInterceptor<T = any> implements NestInterceptor {
             message: data,
             statusCode: 0,
           };
+        } else if (Array.isArray(data)) {
+          return {
+            data,
+            message: 'success',
+            statusCode: 0,
+          };
         } else if (typeof data === 'object' && data !== null) {
           const { message = 'success', ...other } = data;
           return {
