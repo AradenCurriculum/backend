@@ -71,6 +71,10 @@ export class UserService {
       throw new HttpException('RepetitiveUsername', HttpStatus.BAD_REQUEST);
     }
 
+    if (updateUserDto.password) {
+      updateUserDto.password = MD5(updateUserDto.password).toString();
+    }
+
     const updatedUser = await this.prisma.user.update({
       where: { id },
       data: updateUserDto,
