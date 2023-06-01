@@ -19,8 +19,9 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post('/register')
-  register(@Body(new ValidationPipe()) createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+  async register(@Body(new ValidationPipe()) createUserDto: CreateUserDto) {
+    await this.userService.create(createUserDto);
+    return 'RegisterSuccess';
   }
 
   @Post('/login')
@@ -28,9 +29,12 @@ export class UserController {
     @Body(new ValidationPipe()) loginUserDto: LoginUserDto,
     @Session() session: UserSession,
   ) {
+    if (session.user) {
+      return { message: 'ReLoginSuccess', ...session.user };
+    }
     const user = await this.userService.login(loginUserDto);
     session.user = { id: user.id, role: user.role };
-    return 'LoginSuccess';
+    return { message: 'LoginSuccess', ...session.user };
   }
 
   @Post('/logout')
