@@ -64,7 +64,10 @@ export class UserService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
-    if (updateUserDto.username && this.findUser(updateUserDto.username)) {
+    if (
+      updateUserDto.username &&
+      (await this.findUser(updateUserDto.username))
+    ) {
       throw new HttpException('RepetitiveUsername', HttpStatus.BAD_REQUEST);
     }
 
@@ -74,6 +77,10 @@ export class UserService {
     });
 
     return updatedUser;
+  }
+
+  findOne(id: string) {
+    return this.prisma.user.findUnique({ where: { id } });
   }
 
   findAll() {
