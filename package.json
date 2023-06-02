@@ -20,7 +20,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate --watch",
-    "db:studio": "prisma studio --browser chrome"
+    "db:studio": "prisma studio --browser chrome",
+    "createAdmin": "ts-node ./script/createAdmin.ts"
   },
   "dependencies": {
     "@nestjs/common": "^9.0.0",
