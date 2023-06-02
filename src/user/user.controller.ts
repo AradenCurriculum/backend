@@ -55,7 +55,7 @@ export class UserController {
   }
 
   // Roles 为 所有角色 的时候不就是需要登录吗 :)
-  @Get('/userinfo')
+  @Get('/info')
   @Roles('user', 'admin')
   async userinfo(@Session() session: UserSession) {
     const user = await this.userService.findOne(session.user.id);
@@ -74,7 +74,7 @@ export class UserController {
     return { message: 'EditSuccess', ...user };
   }
 
-  @Get('/userlist')
+  @Get('/list')
   @Roles('admin')
   findMany() {
     return this.userService.findMany();
@@ -87,5 +87,13 @@ export class UserController {
       return { message: 'DeleteSelf' };
     }
     return this.userService.remove(id);
+  }
+
+  @Post('/info')
+  @Roles('admin')
+  async getUserInfo(@Body('id') id: string) {
+    const user = await this.userService.findOne(id);
+    user.password = '********';
+    return user;
   }
 }

@@ -32,16 +32,16 @@ export class UserService {
       throw new HttpException('InviteCodeNotExist', HttpStatus.BAD_REQUEST);
     }
 
-    await this.prisma.inviteCode.update({
-      where: { id: invitation.id },
-      data: { used: true },
-    });
-
     delete createUserDto.inviteCode;
     createUserDto.password = MD5(createUserDto.password).toString();
 
     const user = await this.prisma.user.create({
       data: { ...createUserDto, role: invitation.role },
+    });
+
+    await this.prisma.inviteCode.update({
+      where: { id: invitation.id },
+      data: { used: user.id },
     });
 
     return user;

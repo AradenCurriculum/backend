@@ -18,16 +18,16 @@ model User {
   role         String       @default("user")
   registerTime DateTime     @default(now())
   loginTime    DateTime     @default(now())
-  inviteCodes  InviteCode[]
+  inviteCodes  InviteCode[] @relation("Owner") // 由该用户创建的邀请码
 }
 
 model InviteCode {
   id      Int     @id @default(autoincrement())
   code    String  @unique @default(uuid())
-  owner   User    @relation(fields: [ownerId], references: [id])
+  owner   User    @relation("Owner", fields: [ownerId], references: [id])
   ownerId String
   role    String  @default("user")
-  used    Boolean @default(false)
+  used    String?
 }
 
 model Contact {
