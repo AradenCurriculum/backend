@@ -42,3 +42,9 @@ model Contact {
 
   @@unique(fields: [fromId, toId])
 }
+
+model Log {
+  filename String   @id @unique
+  size     Int
+  updated  DateTime
+}

@@ -3,9 +3,10 @@ import { PrismaClient } from '@prisma/client';
 import { UserModule } from './user/user.module';
 import { InvitationModule } from './invitation/invitation.module';
 import { ContactModule } from './contact/contact.module';
+import { LogModule } from './log/log.module';
 
 @Module({
-  imports: [UserModule, InvitationModule, ContactModule],
+  imports: [UserModule, InvitationModule, ContactModule, LogModule],
 })
 export class AppModule {
   static registerGlobalService(config: {
