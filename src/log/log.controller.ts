@@ -1,21 +1,22 @@
+import { createReadStream } from 'fs';
+import { join } from 'path';
+
 import {
   Controller,
   Get,
   Post,
   Param,
   Delete,
-  UploadedFile,
-  UseInterceptors,
   Res,
   UseGuards,
   Query,
+  Body,
+  ValidationPipe,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { Express, Response } from 'express';
+import { Response } from 'express';
 
+import { FindManyDto } from './dto/find-many.dto';
 import { LogService } from './log.service';
-import { createReadStream } from 'fs';
-import { join } from 'path';
 import { RolesGuard } from 'src/common/roles.guard';
 import { Roles } from 'src/common/roles.decorator';
 
@@ -24,23 +25,17 @@ import { Roles } from 'src/common/roles.decorator';
 export class LogController {
   constructor(private readonly logService: LogService) {}
 
-  @Post('upload')
-  @Roles('admin')
-  @UseInterceptors(FileInterceptor('file'))
-  uploadFile(@UploadedFile() file: Express.Multer.File) {
-    console.log(file);
-    return file;
-  }
-
   @Get('download')
+  @Roles('admin')
   getFile(@Query('file') filename: string, @Res() res: Response) {
     const file = createReadStream(join(process.cwd(), `logs/${filename}`));
     file.pipe(res);
   }
 
   @Post()
-  findAll() {
-    return this.logService.findMany();
+  // @Roles('admin')
+  findMany(@Body(new ValidationPipe()) findManyDto: FindManyDto) {
+    return this.logService.findMany(findManyDto);
   }
 
   @Delete(':filename')
