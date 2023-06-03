@@ -3,9 +3,10 @@ import { PrismaClient } from '@prisma/client';
 import { UserModule } from './user/user.module';
 import { InvitationModule } from './invitation/invitation.module';
 import { ContactModule } from './contact/contact.module';
+import { NestLogsModule } from 'nest-logs';
 
 @Module({
-  imports: [UserModule, InvitationModule, ContactModule],
+  imports: [UserModule, InvitationModule, ContactModule, NestLogsModule],
 })
 export class AppModule {
   static registerGlobalService(config: {
