@@ -17,9 +17,7 @@ import { RolesGuard } from 'src/common/roles.guard';
 import { Roles } from 'src/common/roles.decorator';
 import { ValidationPipe } from 'src/common/validate.pipe';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { NestLogger } from 'nest-logs';
 
-@NestLogger()
 @Controller('/api/v1/user')
 @UseGuards(RolesGuard)
 export class UserController {

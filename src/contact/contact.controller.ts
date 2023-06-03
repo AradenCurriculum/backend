@@ -14,9 +14,7 @@ import { CreateContactDto } from './dto/create-contact.dto';
 import { UpdateContactDto } from './dto/update-contact.dto';
 import { RolesGuard } from 'src/common/roles.guard';
 import { Roles } from 'src/common/roles.decorator';
-import { NestLogger } from 'nest-logs';
 
-@NestLogger()
 @Controller('/api/v1/contact')
 @UseGuards(RolesGuard)
 export class ContactController {

@@ -5,6 +5,7 @@ import * as session from 'express-session';
 import { AppModule } from './app.module';
 import { ResponseInterceptor } from './common/response.interceptor';
 import { HttpExceptionFilter } from './common/httpException.filter';
+import { LoggerMiddleware } from './common/logger.middleware';
 
 const prisma = new PrismaClient();
 
@@ -23,6 +24,7 @@ async function bootstrap() {
 
   app.useGlobalInterceptors(new ResponseInterceptor());
   app.useGlobalFilters(new HttpExceptionFilter());
+  app.use(LoggerMiddleware);
 
   await app.listen(3000);
 }

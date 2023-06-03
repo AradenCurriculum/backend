@@ -13,9 +13,7 @@ import { CreateInvitationDto } from './dto/create-invitation.dto';
 import { RolesGuard } from 'src/common/roles.guard';
 import { Roles } from 'src/common/roles.decorator';
 import { ValidationPipe } from 'src/common/validate.pipe';
-import { NestLogger } from 'nest-logs';
 
-@NestLogger()
 @Controller('/api/v1/invitation')
 @UseGuards(RolesGuard)
 export class InvitationController {
