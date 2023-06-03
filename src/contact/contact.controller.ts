@@ -32,19 +32,19 @@ export class ContactController {
   @Get('receive')
   @Roles('user', 'admin')
   findRecv(@Session() session: UserSession) {
-    return this.contactService.findAll(session.user.id, 'recv');
+    return this.contactService.findRecv(session.user.id);
   }
 
   @Get('send')
   @Roles('user', 'admin')
   findSend(@Session() session: UserSession) {
-    return this.contactService.findAll(session.user.id, 'send');
+    return this.contactService.findSend(session.user.id);
   }
 
   @Get('friend')
   @Roles('user', 'admin')
   findFriend(@Session() session: UserSession) {
-    return this.contactService.findAll(session.user.id, 'friend');
+    return this.contactService.findFriend(session.user.id);
   }
 
   @Post('user')

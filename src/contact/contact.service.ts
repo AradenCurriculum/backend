@@ -6,6 +6,21 @@ import { PrismaClient } from '@prisma/client';
 export class ContactService {
   @Inject('PrismaClient') private prisma: PrismaClient;
 
+  private contactIncludes = {
+    from: {
+      select: {
+        username: true,
+        email: true,
+      },
+    },
+    to: {
+      select: {
+        username: true,
+        email: true,
+      },
+    },
+  };
+
   async create(fromId: string, toId: string) {
     const contactInvite = await this.prisma.contact.create({
       data: { fromId, toId, status: 'pending' },
@@ -13,45 +28,52 @@ export class ContactService {
     if (!contactInvite) {
       throw new HttpException('CreateFailed', HttpStatus.BAD_REQUEST);
     }
-    return 'SendSuccess';
+    return 'sendSuccess';
   }
 
-  findAll(userId: string, type: string) {
-    const params = {};
-    if (type === 'send') {
-      params['fromId'] = userId;
-    } else if (type === 'recv') {
-      params['toId'] = userId;
-    } else if (type === 'friend') {
-      params['OR'] = [
-        {
-          fromId: userId,
-          status: 'resolve',
-        },
-        {
-          toId: userId,
-          status: 'resolve',
-        },
-      ];
-    }
-
+  findSend(userId: string) {
     return this.prisma.contact.findMany({
-      where: params,
-      include: {
-        from: {
-          select: {
-            username: true,
-            email: true,
-          },
-        },
-        to: {
-          select: {
-            username: true,
-            email: true,
-          },
-        },
-      },
+      where: { fromId: userId },
+      include: this.contactIncludes,
     });
+  }
+
+  findRecv(userId: string) {
+    return this.prisma.contact.findMany({
+      where: { toId: userId },
+      include: this.contactIncludes,
+    });
+  }
+
+  async findFriend(userId: string) {
+    const contacts = await this.prisma.contact.findMany({
+      where: {
+        OR: [
+          {
+            fromId: userId,
+            status: 'resolve',
+          },
+          {
+            toId: userId,
+            status: 'resolve',
+          },
+        ],
+      },
+      include: this.contactIncludes,
+    });
+
+    contacts.forEach((v) => {
+      if (v.toId === userId) {
+        const temp = v.to;
+        const tempId = v.toId;
+        v.to = v.from;
+        v.toId = v.fromId;
+        v.from = temp;
+        v.fromId = tempId;
+      }
+    });
+
+    return contacts;
   }
 
   findUser(keyword: string, selfId: string) {
@@ -124,6 +146,6 @@ export class ContactService {
     await this.prisma.contact.delete({
       where: { id },
     });
-    return `DeleteSuccess`;
+    return `deleteSuccess`;
   }
 }

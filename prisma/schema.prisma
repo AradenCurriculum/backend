@@ -34,9 +34,11 @@ model InviteCode {
 
 model Contact {
   id     Int    @id @default(autoincrement())
-  fromId String @unique
+  fromId String
   from   User   @relation("sent", fields: [fromId], references: [id])
-  toId   String @unique
+  toId   String
   to     User   @relation("received", fields: [toId], references: [id])
   status String
+
+  @@unique(fields: [fromId, toId])
 }
