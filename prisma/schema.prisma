@@ -50,8 +50,8 @@ model Log {
   updated  DateTime
 }
 
-model Cut {
-  md5    String @id @default(uuid())
+model Chunk {
+  md5    String @id
   size   Int
   order  Int
   File   File   @relation(fields: [fileId], references: [id])
@@ -59,14 +59,15 @@ model Cut {
 }
 
 model File {
-  id         String @id @default(uuid())
-  user       User   @relation("FileOwner", fields: [userId], references: [id])
+  id         String  @id @default(uuid())
+  user       User    @relation("FileOwner", fields: [userId], references: [id])
   userId     String
   name       String
   path       String
-  totalSize  Int
-  uploadSize Int
+  size       Int
+  uploadSize Int     @default(0)
   sign       String
-  status     Int
-  cuts       Cut[]
+  type       String // mimetype
+  status     Int     @default(0)
+  chunks     Chunk[]
 }

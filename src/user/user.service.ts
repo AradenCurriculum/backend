@@ -1,3 +1,5 @@
+import { mkdir, rmdir } from 'fs/promises';
+
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { MD5 } from 'crypto-js';
@@ -43,6 +45,8 @@ export class UserService {
       where: { id: invitation.id },
       data: { used: user.id },
     });
+
+    await mkdir(`assets/${user.id}`);
 
     return user;
   }
@@ -105,6 +109,7 @@ export class UserService {
 
   async remove(id: string) {
     const user = await this.prisma.user.delete({ where: { id } });
+    await rmdir(`assets/${user.id}`);
     return { message: user.id === id ? 'DeleteSuccess' : '' };
   }
 }

@@ -1,40 +1,69 @@
+import { join } from 'path';
 import {
   Controller,
-  Get,
   Post,
+  UseInterceptors,
   Body,
-  Patch,
+  UseGuards,
+  Session,
+  ValidationPipe,
+  UploadedFile,
+  Get,
+  Query,
+  Res,
   Param,
-  Delete,
 } from '@nestjs/common';
+import { Response } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
+
 import { FileService } from './file.service';
+import { CreateFileDto } from './dto/create-file.dto';
+import { UploadChunkDto } from './dto/upload-chunk.dto';
+
+import { RolesGuard } from 'src/common/roles.guard';
+import { Roles } from 'src/common/roles.decorator';
+import { UploadParamsPipe } from 'src/file/uploadParamsPipe.pipe';
 
 @Controller('/api/v1/file')
+@UseGuards(RolesGuard)
 export class FileController {
   constructor(private readonly fileService: FileService) {}
 
-  @Post()
-  create(@Body() createFileDto: any) {
-    return this.fileService.create(createFileDto);
+  @Post('create')
+  @Roles('user', 'admin')
+  async createFile(
+    @Session() session: UserSession,
+    @Body(new ValidationPipe()) createFileDto: CreateFileDto,
+  ) {
+    return this.fileService.createFile(session.user.id, createFileDto);
   }
 
-  @Get()
-  findAll() {
-    return this.fileService.findAll();
+  @Post('chunk')
+  @Roles('user', 'admin')
+  @UseInterceptors(FileInterceptor('chunk'))
+  async uploadChunk(
+    @Session() session: UserSession,
+    @UploadedFile() chunk: Express.Multer.File,
+    @Body(new UploadParamsPipe(), new ValidationPipe())
+    uploadChunkDto: UploadChunkDto,
+  ) {
+    return this.fileService.uploadChunk(session.user.id, chunk, uploadChunkDto);
+  }
+
+  @Get('chunk/:md5')
+  @Roles('user', 'admin')
+  downloadChunk(
+    @Session() session: UserSession,
+    @Param('md5') md5: string,
+    @Res() res: Response,
+  ) {
+    const url = join(process.cwd(), `assets/${session.user.id}/${md5}`);
+    res.download(url);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.fileService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateFileDto: any) {
-    return this.fileService.update(+id, updateFileDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.fileService.remove(+id);
+  @Roles('user', 'admin')
+  downloadFile(@Param('id') id: string) {
+    return this.fileService.downloadFile(id);
   }
 }

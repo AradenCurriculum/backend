@@ -7,7 +7,7 @@ async function main() {
   for (let i = 1; i < 6; i++) {
     for (let j = 1; j <= 28; j++) {
       const filename = `2023-${i}-${j}.log`;
-      await writeFile(`logs/${filename}`, 'test', { flag: 'a+' });
+      await writeFile(`logs/${filename}`, 'test', { flag: 'a' });
       const file = await readFile(`logs/${filename}`);
       const log = await prisma.log.upsert({
         where: {
