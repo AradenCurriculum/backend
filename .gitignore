@@ -36,3 +36,7 @@ lerna-debug.log*
 
 # prisma - migrations
 /prisma/migrations
+
+# assets
+assets
+assets/*
