@@ -1,4 +1,3 @@
-import { createReadStream } from 'fs';
 import { join } from 'path';
 
 import {
@@ -19,6 +18,7 @@ import { FindManyDto } from './dto/find-many.dto';
 import { LogService } from './log.service';
 import { RolesGuard } from 'src/common/roles.guard';
 import { Roles } from 'src/common/roles.decorator';
+import { readFile } from 'fs/promises';
 
 @Controller('/api/v1/log')
 @UseGuards(RolesGuard)
@@ -27,13 +27,20 @@ export class LogController {
 
   @Get('download')
   @Roles('admin')
-  getFile(@Query('file') filename: string, @Res() res: Response) {
-    const file = createReadStream(join(process.cwd(), `logs/${filename}`));
-    file.pipe(res);
+  getFile(@Query('filename') filename: string, @Res() res: Response) {
+    const url = join(process.cwd(), `logs/${filename}`);
+    res.download(url);
+  }
+
+  @Get('export')
+  @Roles('admin')
+  async downLoad(@Query('filename') filename: string) {
+    const file = await readFile(`logs/${filename}`);
+    return { data: file.toString() };
   }
 
   @Post()
-  // @Roles('admin')
+  @Roles('admin')
   findMany(@Body(new ValidationPipe()) findManyDto: FindManyDto) {
     return this.logService.findMany(findManyDto);
   }

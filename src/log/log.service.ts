@@ -7,17 +7,39 @@ import { FindManyDto } from './dto/find-many.dto';
 export class LogService {
   @Inject('PrismaClient') private prisma: PrismaClient;
 
-  findMany(findManyDto: FindManyDto) {
+  async findMany(findManyDto: FindManyDto) {
     const { current, pageSize, keyword, sizeRange, createdTime } = findManyDto;
-    return this.prisma.log.findMany({
+    if (!createdTime[0]) createdTime[0] = '1970-1-1';
+    if (!createdTime[1]) createdTime[1] = '2100-1-1';
+    const logs = await this.prisma.log.findMany({
       where: {
         filename: { contains: keyword },
         size: { gte: sizeRange[0], lte: sizeRange[1] },
-        updated: { gte: createdTime[0], lte: createdTime[1] },
+        updated: {
+          gte: new Date(createdTime[0]),
+          lte: new Date(createdTime[1]),
+        },
       },
       skip: (current - 1) * pageSize,
       take: pageSize,
+      orderBy: {
+        updated: 'desc',
+      },
     });
+    const total = await this.prisma.log.count({
+      where: {
+        filename: { contains: keyword },
+        size: { gte: sizeRange[0], lte: sizeRange[1] },
+        updated: {
+          gte: new Date(createdTime[0]),
+          lte: new Date(createdTime[1]),
+        },
+      },
+    });
+    return {
+      data: logs,
+      total,
+    };
   }
 
   async remove(filename: string) {
