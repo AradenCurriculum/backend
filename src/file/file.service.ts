@@ -1,6 +1,6 @@
-import { writeFile } from 'fs/promises';
+import { access, mkdir, writeFile } from 'fs/promises';
 import { PrismaClient } from '@prisma/client';
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
 import { CreateFileDto } from './dto/create-file.dto';
 import { UploadChunkDto } from './dto/upload-chunk.dto';
@@ -9,12 +9,14 @@ import { UploadChunkDto } from './dto/upload-chunk.dto';
 export class FileService {
   @Inject('PrismaClient') private prisma: PrismaClient;
 
-  createFile(userId: string, createFileDto: CreateFileDto) {
-    return this.prisma.file.create({
-      data: {
+  async createFile(userId: string, createFileDto: CreateFileDto) {
+    const file = await this.prisma.file.upsert({
+      where: { sign: createFileDto.sign },
+      create: {
         userId,
         ...createFileDto,
       },
+      update: {},
       select: {
         id: true,
         sign: true,
@@ -23,32 +25,51 @@ export class FileService {
         uploadSize: true,
       },
     });
+
+    try {
+      await access(`assets/${userId}/${file.sign}`);
+    } catch (err) {
+      await mkdir(`assets/${userId}/${file.sign}`);
+    }
+
+    return file;
   }
 
   async uploadChunk(
-    userId: string,
     chunk: Express.Multer.File,
     uploadChunkDto: UploadChunkDto,
   ) {
-    await writeFile(`assets/${userId}/${uploadChunkDto.md5}`, chunk.buffer, {
-      flag: 'a',
-    });
-
-    const res = await this.prisma.chunk.create({
-      data: {
-        ...uploadChunkDto,
+    const existChunk = await this.prisma.chunk.findUnique({
+      where: {
+        md5: uploadChunkDto.md5,
       },
     });
-    if (!res) {
-      throw new HttpException('Could not upload', HttpStatus.BAD_GATEWAY);
+
+    if (existChunk) {
+      return existChunk;
     }
-    const file = await this.prisma.file.update({
+
+    const file = await this.prisma.file.findUnique({
+      where: {
+        id: uploadChunkDto.fileId,
+      },
+    });
+
+    const path = `assets/${file.userId}/${file.sign}/${uploadChunkDto.md5}`;
+
+    await writeFile(path, chunk.buffer, { flag: 'a' });
+
+    const uploadedChunk = await this.prisma.chunk.create({
+      data: uploadChunkDto,
+    });
+
+    const updatedFile = await this.prisma.file.update({
       where: {
         id: uploadChunkDto.fileId,
       },
       data: {
         uploadSize: {
-          increment: res.size,
+          increment: uploadedChunk.size,
         },
       },
       select: {
@@ -60,7 +81,7 @@ export class FileService {
       },
     });
 
-    return file;
+    return updatedFile;
   }
 
   async downloadFile(id: string) {
@@ -70,5 +91,20 @@ export class FileService {
         chunks: true,
       },
     });
+  }
+
+  async getChunkPath(md5: string) {
+    const chunk = await this.prisma.chunk.findUnique({
+      where: { md5 },
+      include: {
+        file: {
+          select: {
+            userId: true,
+            sign: true,
+          },
+        },
+      },
+    });
+    return `assets/${chunk.file.userId}/${chunk.file.sign}/${md5}`;
   }
 }

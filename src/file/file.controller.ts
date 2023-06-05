@@ -9,7 +9,6 @@ import {
   ValidationPipe,
   UploadedFile,
   Get,
-  Query,
   Res,
   Param,
 } from '@nestjs/common';
@@ -42,22 +41,18 @@ export class FileController {
   @Roles('user', 'admin')
   @UseInterceptors(FileInterceptor('chunk'))
   async uploadChunk(
-    @Session() session: UserSession,
     @UploadedFile() chunk: Express.Multer.File,
     @Body(new UploadParamsPipe(), new ValidationPipe())
     uploadChunkDto: UploadChunkDto,
   ) {
-    return this.fileService.uploadChunk(session.user.id, chunk, uploadChunkDto);
+    return this.fileService.uploadChunk(chunk, uploadChunkDto);
   }
 
   @Get('chunk/:md5')
   @Roles('user', 'admin')
-  downloadChunk(
-    @Session() session: UserSession,
-    @Param('md5') md5: string,
-    @Res() res: Response,
-  ) {
-    const url = join(process.cwd(), `assets/${session.user.id}/${md5}`);
+  async downloadChunk(@Param('md5') md5: string, @Res() res: Response) {
+    const path = await this.fileService.getChunkPath(md5);
+    const url = join(process.cwd(), path);
     res.download(url);
   }
 

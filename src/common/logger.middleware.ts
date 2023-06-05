@@ -9,10 +9,7 @@ export async function LoggerMiddleware(req: any, res: any, next: any) {
   const info = `${new Date().toLocaleTimeString()} / ${req.method} : ${
     req.originalUrl
   } - ${res.statusCode} ${res.statusMessage} ip: ${req.ip}
-  用户信息: ${JSON.stringify(req.session.user)} 
-  params: ${JSON.stringify(req.params)} query: ${JSON.stringify(
-    req.query,
-  )} body: ${JSON.stringify(req.body)} \n
+  用户信息: ${JSON.stringify(req.session.user)} \n
 `;
 
   await writeFile(`logs/${filename}`, info, { flag: 'a' });

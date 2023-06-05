@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { mkdir } from 'fs/promises';
+import { access, mkdir } from 'fs/promises';
 
 const prisma = new PrismaClient();
 
@@ -10,7 +10,11 @@ async function main() {
     },
   });
   for (const user of users) {
-    await mkdir(`assets/${user.id}`);
+    try {
+      await access(`assets/${user.id}`);
+    } catch (err) {
+      await mkdir(`assets/${user.id}`);
+    }
   }
 }
 

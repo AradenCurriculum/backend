@@ -1,4 +1,5 @@
 import * as readline from 'node:readline/promises';
+import { access, mkdir } from 'node:fs/promises';
 import { stdin as input, stdout as output } from 'node:process';
 import { PrismaClient } from '@prisma/client';
 import { MD5 } from 'crypto-js';
@@ -27,6 +28,15 @@ async function main() {
       role: 'admin',
     },
   });
+
+  try {
+    await access('assets');
+  } catch (error) {
+    await mkdir('assets');
+  }
+
+  await mkdir(`assets/${user.id}`);
+
   console.log('创建管理员账户：', user);
 }
 
