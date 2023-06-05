@@ -22,6 +22,7 @@ import { UploadChunkDto } from './dto/upload-chunk.dto';
 import { RolesGuard } from 'src/common/roles.guard';
 import { Roles } from 'src/common/roles.decorator';
 import { UploadParamsPipe } from 'src/file/uploadParamsPipe.pipe';
+import { FetchFilesDto } from './dto/fetch-files.dto';
 
 @Controller('/api/v1/file')
 @UseGuards(RolesGuard)
@@ -60,5 +61,14 @@ export class FileController {
   @Roles('user', 'admin')
   downloadFile(@Param('id') id: string) {
     return this.fileService.downloadFile(id);
+  }
+
+  @Post('list')
+  @Roles('user', 'admin')
+  fetchFilesList(
+    @Session() session: UserSession,
+    @Body(new ValidationPipe()) fetchFilesDto: FetchFilesDto,
+  ) {
+    return this.fileService.filesList(session.user.id, fetchFilesDto);
   }
 }

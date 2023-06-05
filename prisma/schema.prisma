@@ -59,16 +59,18 @@ model Chunk {
 }
 
 model File {
-  id         String  @id @default(uuid())
-  user       User    @relation("FileOwner", fields: [userId], references: [id])
+  id         String   @id @default(uuid())
+  user       User     @relation("FileOwner", fields: [userId], references: [id])
   userId     String
   name       String
   path       String // 虚拟路径
   size       Int
-  uploadSize Int     @default(0)
-  sign       String  @unique // 文件的唯一标识，由虚拟路径和文件内容拼接后hash得来
+  uploadSize Int      @default(0)
+  sign       String   @unique // 文件的唯一标识，由虚拟路径和文件内容拼接后hash得来
   type       String // mimetype
-  status     Int     @default(0)
+  status     Int      @default(0)
   chunks     Chunk[]
+  updatedAt  DateTime @default(now())
+  // 文件虚拟路径应是 /<folder-name> 格式，仅作前端展示用，不能与实际路径扯上关系
   // 文件 chunk 的实际资源路径位于：assets/${userId}/${sign}/${chunk-md5}
 }

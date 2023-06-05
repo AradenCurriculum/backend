@@ -4,6 +4,7 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import { CreateFileDto } from './dto/create-file.dto';
 import { UploadChunkDto } from './dto/upload-chunk.dto';
+import { FetchFilesDto } from './dto/fetch-files.dto';
 
 @Injectable()
 export class FileService {
@@ -106,5 +107,20 @@ export class FileService {
       },
     });
     return `assets/${chunk.file.userId}/${chunk.file.sign}/${md5}`;
+  }
+
+  filesList(userId: string, fetchFilesDto: FetchFilesDto) {
+    if (!['updatedAt', 'name', 'size'].includes(fetchFilesDto.sortBy)) {
+      fetchFilesDto.sortBy = 'updatedAt';
+    }
+    if (!['asc', 'desc'].includes(fetchFilesDto.orderBy)) {
+      fetchFilesDto.orderBy = 'asc';
+    }
+    return this.prisma.file.findMany({
+      where: { userId, path: fetchFilesDto.path },
+      orderBy: {
+        [fetchFilesDto.sortBy]: fetchFilesDto.orderBy,
+      },
+    });
   }
 }
