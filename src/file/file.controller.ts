@@ -91,4 +91,10 @@ export class FileController {
   deleteFile(@Param('fileId') fileId: string) {
     return this.fileService.deleteFile(fileId);
   }
+
+  @Post('info')
+  @Roles('user', 'admin')
+  fileInfo(@Body('fileId') fileId: string) {
+    return this.fileService.fileInfo(fileId);
+  }
 }

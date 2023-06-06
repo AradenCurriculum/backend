@@ -9,8 +9,8 @@ export class FetchFilesDto {
   path: string;
 
   @IsString()
-  sortBy: string;
+  sortBy?: string;
 
   @IsString()
-  orderBy: string;
+  orderBy?: string;
 }

@@ -165,19 +165,23 @@ export class FileService {
   }
 
   // 获取用户文件列表
-  filesList(userId: string, fetchFilesDto: FetchFilesDto) {
+  async filesList(userId: string, fetchFilesDto: FetchFilesDto) {
     if (!['updatedAt', 'name', 'size'].includes(fetchFilesDto.sortBy)) {
       fetchFilesDto.sortBy = 'updatedAt';
     }
     if (!['asc', 'desc'].includes(fetchFilesDto.orderBy)) {
       fetchFilesDto.orderBy = 'desc';
     }
-    return this.prisma.file.findMany({
+    const files = await this.prisma.file.findMany({
       where: { userId, path: fetchFilesDto.path },
       orderBy: {
         [fetchFilesDto.sortBy]: fetchFilesDto.orderBy,
       },
     });
+    return [
+      ...files.filter((v) => v.type === 'folder'),
+      ...files.filter((v) => v.type !== 'folder'),
+    ];
   }
 
   async updateFile(fileId: string) {
@@ -198,5 +202,39 @@ export class FileService {
       await rmdir(`assets/${file.userId}/${file.sign}`);
     }
     return 'deleteSuccess';
+  }
+
+  // 统计目录下的文件信息
+  async calcFiles(userId: string, path: string) {
+    const res = { size: 0, uploadSize: 0, fileCount: 0, folderCount: 0 };
+    const files = await this.filesList(userId, { path });
+    if (!files) return res;
+    for (const file of files) {
+      if (file.type === 'folder') {
+        const subRes = await this.calcFiles(userId, path + '/' + file.name);
+        res.size += subRes.size;
+        res.uploadSize += subRes.uploadSize;
+        res.fileCount += subRes.fileCount;
+        res.folderCount += subRes.folderCount + 1;
+      } else {
+        res.size += file.size;
+        res.uploadSize += file.uploadSize;
+        res.fileCount++;
+      }
+    }
+    return res;
+  }
+
+  async fileInfo(fileId: string) {
+    const file = await this.prisma.file.findUnique({
+      where: { id: fileId },
+    });
+
+    const total = await this.calcFiles(
+      file.userId,
+      file.path + '/' + file.name,
+    );
+
+    return { ...total, ...file };
   }
 }
