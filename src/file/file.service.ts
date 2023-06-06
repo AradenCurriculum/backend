@@ -50,6 +50,26 @@ export class FileService {
     return file;
   }
 
+  async createFolder(userId: string, createFileDto: CreateFileDto) {
+    let folder: Pick<File, 'id' | 'sign' | 'path'>;
+    try {
+      folder = await this.prisma.file.create({
+        data: {
+          userId,
+          ...createFileDto,
+        },
+        select: {
+          id: true,
+          sign: true,
+          path: true,
+        },
+      });
+    } catch (error) {
+      return null;
+    }
+    return folder;
+  }
+
   // 将文件块写入本地，创建文件块记录，更新文件记录
   async uploadChunk(
     chunk: Express.Multer.File,

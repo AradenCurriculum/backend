@@ -38,6 +38,15 @@ export class FileController {
     return this.fileService.createFile(session.user.id, createFileDto);
   }
 
+  @Post('folder')
+  @Roles('user', 'admin')
+  async createFolder(
+    @Session() session: UserSession,
+    @Body(new ValidationPipe()) createFileDto: CreateFileDto,
+  ) {
+    return this.fileService.createFolder(session.user.id, createFileDto);
+  }
+
   @Post('chunk')
   @Roles('user', 'admin')
   @UseInterceptors(FileInterceptor('chunk'))
