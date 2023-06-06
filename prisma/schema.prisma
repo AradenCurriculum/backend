@@ -66,11 +66,14 @@ model File {
   path       String // 虚拟路径
   size       Int
   uploadSize Int      @default(0)
-  sign       String   @unique // 文件的唯一标识，由虚拟路径和文件内容拼接后hash得来
+  sign       String // 文件的唯一标识，由文件内容 hash 得来
   type       String // mimetype
   status     Int      @default(0)
   chunks     Chunk[]
   updatedAt  DateTime @default(now())
   // 文件虚拟路径应是 /<folder-name> 格式，仅作前端展示用，不能与实际路径扯上关系
   // 文件 chunk 的实际资源路径位于：assets/${userId}/${sign}/${chunk-md5}
+
+  // 不同的路径下可以有相同的文件，相同路径、内容相同的文件也可以有不同的名称，不同用户可以在相同路径有同名同内容文件
+  @@unique([userId, path, name, sign])
 }

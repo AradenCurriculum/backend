@@ -49,18 +49,22 @@ export class FileController {
     return this.fileService.uploadChunk(chunk, uploadChunkDto);
   }
 
-  @Get('chunk/:md5')
-  @Roles('user', 'admin')
-  async downloadChunk(@Param('md5') md5: string, @Res() res: Response) {
-    const path = await this.fileService.getChunkPath(md5);
-    const url = join(process.cwd(), path);
-    res.download(url);
-  }
-
   @Get(':id')
   @Roles('user', 'admin')
   downloadFile(@Param('id') id: string) {
-    return this.fileService.downloadFile(id);
+    return this.fileService.getFileInfo(id);
+  }
+
+  @Get(':id/:md5')
+  @Roles('user', 'admin')
+  async downloadChunk(
+    @Param('id') id: string,
+    @Param('md5') md5: string,
+    @Res() res: Response,
+  ) {
+    const path = await this.fileService.getChunkPath(id, md5);
+    const url = join(process.cwd(), path);
+    res.download(url);
   }
 
   @Post('list')
