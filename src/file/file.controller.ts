@@ -11,6 +11,7 @@ import {
   Get,
   Res,
   Param,
+  Delete,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -83,5 +84,11 @@ export class FileController {
     @Body(new ValidationPipe()) fetchFilesDto: FetchFilesDto,
   ) {
     return this.fileService.filesList(session.user.id, fetchFilesDto);
+  }
+
+  @Delete(':fileId')
+  @Roles('user', 'admin')
+  deleteFile(@Param('fileId') fileId: string) {
+    return this.fileService.deleteFile(fileId);
   }
 }

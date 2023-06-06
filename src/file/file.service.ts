@@ -1,4 +1,4 @@
-import { access, mkdir, writeFile } from 'fs/promises';
+import { access, mkdir, rmdir, unlink, writeFile } from 'fs/promises';
 import { File, PrismaClient } from '@prisma/client';
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 
@@ -178,5 +178,25 @@ export class FileService {
         [fetchFilesDto.sortBy]: fetchFilesDto.orderBy,
       },
     });
+  }
+
+  async updateFile(fileId: string) {
+    //, updateFileDto: UpdateFileDto) {
+  }
+
+  async deleteFile(fileId: string) {
+    const file = await this.prisma.file.delete({
+      where: { id: fileId },
+      include: {
+        chunks: true,
+      },
+    });
+    for (const chunk of file.chunks) {
+      await unlink(`assets/${file.userId}/${file.sign}/${chunk.md5}`);
+    }
+    if (file.type !== 'folder') {
+      await rmdir(`assets/${file.userId}/${file.sign}`);
+    }
+    return 'deleteSuccess';
   }
 }
