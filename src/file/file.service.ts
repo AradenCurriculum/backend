@@ -10,7 +10,7 @@ import { FetchFilesDto } from './dto/fetch-files.dto';
 export class FileService {
   @Inject('PrismaClient') private prisma: PrismaClient;
   // fileId -> 实际存储路径的映射，避免每次获取文件块的下载路径时都查数据库
-  private filePathRecord: Map<string, string>;
+  private filePathRecord: Map<string, string> = new Map();
 
   // 创建文件记录，在实际存储路径位置创建用于存储文件块的文件夹
   async createFile(userId: string, createFileDto: CreateFileDto) {
