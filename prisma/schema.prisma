@@ -51,11 +51,14 @@ model Log {
 }
 
 model Chunk {
-  md5    String @id
+  id     Int    @id @default(autoincrement())
+  md5    String
   size   Int
   order  Int
   file   File   @relation(fields: [fileId], references: [id])
   fileId String
+
+  @@unique([fileId, md5])
 }
 
 model File {
@@ -66,7 +69,8 @@ model File {
   path       String // 虚拟路径
   size       Int
   uploadSize Int      @default(0)
-  sign       String // 文件的唯一标识，由文件内容 hash 得来
+  // 最终虚拟路径还是通过文件标识符和实际路径扯上了关系，，不然没办法
+  sign       String // 文件的唯一标识，由 虚拟路径 + 文件内容 hash 得来，修改文件时再hash一遍（？）
   type       String // mimetype
   status     Int      @default(0)
   chunks     Chunk[]

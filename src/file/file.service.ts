@@ -1,6 +1,6 @@
 import { access, mkdir, writeFile } from 'fs/promises';
-import { PrismaClient } from '@prisma/client';
-import { Inject, Injectable } from '@nestjs/common';
+import { File, PrismaClient } from '@prisma/client';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 
 import { CreateFileDto } from './dto/create-file.dto';
 import { UploadChunkDto } from './dto/upload-chunk.dto';
@@ -14,19 +14,28 @@ export class FileService {
 
   // 创建文件记录，在实际存储路径位置创建用于存储文件块的文件夹
   async createFile(userId: string, createFileDto: CreateFileDto) {
-    const file = await this.prisma.file.create({
-      data: {
-        userId,
-        ...createFileDto,
-      },
-      select: {
-        id: true,
-        sign: true,
-        type: true,
-        size: true,
-        uploadSize: true,
-      },
-    });
+    let file: Pick<File, 'id' | 'sign' | 'type' | 'size' | 'uploadSize'>;
+    try {
+      file = await this.prisma.file.create({
+        data: {
+          userId,
+          ...createFileDto,
+        },
+        select: {
+          id: true,
+          sign: true,
+          type: true,
+          size: true,
+          uploadSize: true,
+        },
+      });
+    } catch (error) {
+      if (error.code === 'P2002') {
+        throw new HttpException('FileExists', HttpStatus.BAD_REQUEST);
+      } else {
+        throw new HttpException('CreateFileFailed', HttpStatus.BAD_REQUEST);
+      }
+    }
 
     const realPath = `assets/${userId}/${file.sign}`;
 
@@ -48,12 +57,15 @@ export class FileService {
   ) {
     const existChunk = await this.prisma.chunk.findUnique({
       where: {
-        md5: uploadChunkDto.md5,
+        fileId_md5: {
+          md5: uploadChunkDto.md5,
+          fileId: uploadChunkDto.fileId,
+        },
       },
     });
 
     if (existChunk) {
-      return existChunk;
+      return 'existChunk';
     }
 
     let realPath = '';
@@ -116,7 +128,7 @@ export class FileService {
       realPath = `${this.filePathRecord.get(id)}`;
     } else {
       const chunk = await this.prisma.chunk.findUnique({
-        where: { md5 },
+        where: { fileId_md5: { md5, fileId: id } },
         include: {
           file: {
             select: {
@@ -138,7 +150,7 @@ export class FileService {
       fetchFilesDto.sortBy = 'updatedAt';
     }
     if (!['asc', 'desc'].includes(fetchFilesDto.orderBy)) {
-      fetchFilesDto.orderBy = 'asc';
+      fetchFilesDto.orderBy = 'desc';
     }
     return this.prisma.file.findMany({
       where: { userId, path: fetchFilesDto.path },
