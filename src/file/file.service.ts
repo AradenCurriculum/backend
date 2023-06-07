@@ -255,9 +255,28 @@ export class FileService {
 
     if (file.type === 'folder') {
       data.sign = MD5(newName).toString();
+      // 这段逻辑就是 一拖四
+      const prefix = file.path + '/' + file.name;
+      const files = await this.prisma.file.findMany({
+        where: { path: { startsWith: prefix } },
+      });
+      for (const relatedFile of files) {
+        await this.prisma.file.update({
+          where: { id: relatedFile.id },
+          data: {
+            path: relatedFile.path.replace(prefix, file.path + '/' + newName),
+          },
+        });
+      }
     }
 
-    await this.prisma.file.update({ where: { id: fileId }, data });
+    await this.prisma.file.update({
+      where: { id: fileId },
+      data: {
+        ...data,
+        updatedAt: new Date(),
+      },
+    });
 
     return 'renameSuccess';
   }
