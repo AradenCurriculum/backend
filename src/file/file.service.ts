@@ -1,4 +1,4 @@
-import { access, mkdir, rmdir, unlink, writeFile } from 'fs/promises';
+import { access, copyFile, mkdir, rmdir, unlink, writeFile } from 'fs/promises';
 import { File, PrismaClient } from '@prisma/client';
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 
@@ -188,9 +188,7 @@ export class FileService {
   async deleteFile(fileId: string[]) {
     const files = await this.prisma.file.findMany({
       where: { id: { in: fileId } },
-      include: {
-        chunks: true,
-      },
+      include: { chunks: true },
     });
 
     for (const file of files) {
@@ -296,9 +294,61 @@ export class FileService {
     return 'renameSuccess';
   }
 
-  // async pasteFiles(fileId: string[], newPath: string, userId?: string) {
-  //   const files = this.prisma.file.findMany({
-  //     where: { id: { in: fileId } },
-  //   });
-  // }
+  // 将已有文件保存至指定位置，也做分享时保存到我的网盘使用
+  async pasteFiles(fileId: string[], newPath: string, userId?: string) {
+    const files = await this.prisma.file.findMany({
+      where: { id: { in: fileId } },
+      include: { chunks: true },
+    });
+
+    for (const file of files) {
+      const newFile = await this.createFile(userId ?? file.userId, {
+        name: file.name,
+        path: newPath,
+        size: file.size,
+        sign: file.sign,
+        type: file.type,
+      });
+      if (file.type !== 'folder') {
+        const srcRealPath = `assets/${file.userId}/${file.id}`;
+        const targetRealPath = `assets/${userId ?? file.userId}/${newFile.id}`;
+        for (const chunk of file.chunks) {
+          await copyFile(
+            srcRealPath + '/' + chunk.md5,
+            targetRealPath + '/' + chunk.md5,
+          );
+          await this.prisma.chunk.create({
+            data: {
+              md5: chunk.md5,
+              order: chunk.order,
+              size: chunk.size,
+              fileId: newFile.id,
+            },
+          });
+        }
+      } else {
+        const files = await this.prisma.file.findMany({
+          where: { path: { startsWith: file.path + '/' + file.name } },
+          select: { id: true },
+        });
+        await this.pasteFiles(
+          files.map((file) => file.id),
+          newPath + '/' + file.name,
+          userId,
+        );
+      }
+    }
+    return 'pasteSuccess';
+  }
+
+  async copyFiles(fileId: string[], newPath: string, userId?: string) {
+    await this.pasteFiles(fileId, newPath, userId);
+    return userId ? 'saveSuccess' : 'copySuccess';
+  }
+
+  async cutFiles(fileId: string[], newPath: string) {
+    await this.pasteFiles(fileId, newPath);
+    await this.deleteFile(fileId);
+    return 'cutSuccess';
+  }
 }

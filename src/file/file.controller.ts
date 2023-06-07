@@ -11,7 +11,6 @@ import {
   Get,
   Res,
   Param,
-  Delete,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -24,6 +23,7 @@ import { RolesGuard } from 'src/common/roles.guard';
 import { Roles } from 'src/common/roles.decorator';
 import { UploadParamsPipe } from 'src/file/uploadParamsPipe.pipe';
 import { FetchFilesDto } from './dto/fetch-files.dto';
+import { PasteFileDto } from './dto/paste-file.dto';
 
 @Controller('/api/v1/file')
 @UseGuards(RolesGuard)
@@ -92,12 +92,6 @@ export class FileController {
     return this.fileService.deleteFile(files);
   }
 
-  @Delete(':fileId')
-  @Roles('user', 'admin')
-  deleteFile(@Param('fileId') fileId: string) {
-    return this.fileService.deleteFile([fileId]);
-  }
-
   @Post('info')
   @Roles('user', 'admin')
   fileInfo(@Body('fileId') fileId: string) {
@@ -108,5 +102,21 @@ export class FileController {
   @Roles('user', 'admin')
   renameFile(@Body('fileId') fileId: string, @Body('newName') newName: string) {
     return this.fileService.renameFile(fileId, newName);
+  }
+
+  @Post('copy')
+  @Roles('user', 'admin')
+  copyFile(@Body(new ValidationPipe()) pasteFileDto: PasteFileDto) {
+    return this.fileService.copyFiles(
+      pasteFileDto.fileId,
+      pasteFileDto.newPath,
+      pasteFileDto.userId,
+    );
+  }
+
+  @Post('cut')
+  @Roles('user', 'admin')
+  cutFile(@Body(new ValidationPipe()) pasteFileDto: PasteFileDto) {
+    return this.fileService.cutFiles(pasteFileDto.fileId, pasteFileDto.newPath);
   }
 }
