@@ -15,19 +15,12 @@ export class FileService {
 
   // 创建文件记录，在实际存储路径位置创建用于存储文件块的文件夹
   async createFile(userId: string, createFileDto: CreateFileDto) {
-    let file: Pick<File, 'id' | 'sign' | 'type' | 'size' | 'uploadSize'>;
+    let file: File;
     try {
       file = await this.prisma.file.create({
         data: {
           userId,
           ...createFileDto,
-        },
-        select: {
-          id: true,
-          sign: true,
-          type: true,
-          size: true,
-          uploadSize: true,
         },
       });
     } catch (error) {
@@ -52,17 +45,12 @@ export class FileService {
   }
 
   async createFolder(userId: string, createFileDto: CreateFileDto) {
-    let folder: Pick<File, 'id' | 'sign' | 'path'>;
+    let folder: File;
     try {
       folder = await this.prisma.file.create({
         data: {
           userId,
           ...createFileDto,
-        },
-        select: {
-          id: true,
-          sign: true,
-          path: true,
         },
       });
     } catch (error) {
@@ -112,33 +100,18 @@ export class FileService {
     });
 
     const updatedFile = await this.prisma.file.update({
-      where: {
-        id: uploadChunkDto.fileId,
-      },
-      data: {
-        uploadSize: {
-          increment: uploadedChunk.size,
-        },
-      },
-      select: {
-        id: true,
-        sign: true,
-        type: true,
-        size: true,
-        uploadSize: true,
-      },
+      where: { id: uploadChunkDto.fileId },
+      data: { uploadSize: { increment: uploadedChunk.size } },
     });
 
     return updatedFile;
   }
 
-  // 下载文件，不如说是获取文件信息
+  // 获取文件信息
   async getFileInfo(id: string) {
     return this.prisma.file.findUnique({
       where: { id },
-      include: {
-        chunks: true,
-      },
+      include: { chunks: true },
     });
   }
 
