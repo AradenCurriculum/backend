@@ -161,16 +161,29 @@ export class FileService {
     if (!['asc', 'desc'].includes(fetchFilesDto.orderBy)) {
       fetchFilesDto.orderBy = 'desc';
     }
-    const files = await this.prisma.file.findMany({
-      where: { userId, path: fetchFilesDto.path },
-      orderBy: {
-        [fetchFilesDto.sortBy]: fetchFilesDto.orderBy,
-      },
-    });
-    return [
-      ...files.filter((v) => v.type === 'folder'),
-      ...files.filter((v) => v.type !== 'folder'),
-    ];
+    if (fetchFilesDto.keyword) {
+      const files = await this.prisma.file.findMany({
+        where: { userId, name: { contains: fetchFilesDto.keyword } },
+        orderBy: {
+          [fetchFilesDto.sortBy]: fetchFilesDto.orderBy,
+        },
+      });
+      return [
+        ...files.filter((v) => v.type === 'folder'),
+        ...files.filter((v) => v.type !== 'folder'),
+      ];
+    } else {
+      const files = await this.prisma.file.findMany({
+        where: { userId, path: fetchFilesDto.path },
+        orderBy: {
+          [fetchFilesDto.sortBy]: fetchFilesDto.orderBy,
+        },
+      });
+      return [
+        ...files.filter((v) => v.type === 'folder'),
+        ...files.filter((v) => v.type !== 'folder'),
+      ];
+    }
   }
 
   async deleteFile(fileId: string[]) {
