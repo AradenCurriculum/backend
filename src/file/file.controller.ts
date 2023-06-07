@@ -97,4 +97,10 @@ export class FileController {
   fileInfo(@Body('fileId') fileId: string) {
     return this.fileService.fileInfo(fileId);
   }
+
+  @Post('rename')
+  @Roles('user', 'admin')
+  renameFile(@Body('fileId') fileId: string, @Body('newName') newName: string) {
+    return this.fileService.renameFile(fileId, newName);
+  }
 }

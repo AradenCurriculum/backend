@@ -5,6 +5,7 @@ import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { CreateFileDto } from './dto/create-file.dto';
 import { UploadChunkDto } from './dto/upload-chunk.dto';
 import { FetchFilesDto } from './dto/fetch-files.dto';
+import { MD5 } from 'crypto-js';
 
 @Injectable()
 export class FileService {
@@ -230,11 +231,34 @@ export class FileService {
       where: { id: fileId },
     });
 
-    const total = await this.calcFiles(
-      file.userId,
-      file.path + '/' + file.name,
-    );
+    let fileCount = 0;
+    let folderCount = 0;
+    if (file.type === 'folder') {
+      const total = await this.calcFiles(
+        file.userId,
+        file.path + '/' + file.name,
+      );
+      file.size += total.size;
+      file.uploadSize += total.uploadSize;
+      fileCount = total.fileCount;
+      folderCount = total.folderCount;
+    }
+    return { fileCount, folderCount, ...file };
+  }
 
-    return { ...total, ...file };
+  async renameFile(fileId: string, newName: string) {
+    const file = await this.prisma.file.findUnique({
+      where: { id: fileId },
+    });
+
+    const data: { name: string; sign?: string } = { name: newName };
+
+    if (file.type === 'folder') {
+      data.sign = MD5(newName).toString();
+    }
+
+    await this.prisma.file.update({ where: { id: fileId }, data });
+
+    return 'renameSuccess';
   }
 }
