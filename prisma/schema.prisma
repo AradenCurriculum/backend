@@ -76,7 +76,7 @@ model File {
   chunks     Chunk[]
   updatedAt  DateTime @default(now())
   // 文件虚拟路径应是 /<folder-name> 格式，仅作前端展示用，不能与实际路径扯上关系
-  // 文件 chunk 的实际资源路径位于：assets/${userId}/${sign}/${chunk-md5}
+  // 文件 chunk 的实际资源路径位于：assets/${userId}/${fileId}/${chunk-md5}
 
   // 不同的路径下可以有相同的文件，相同路径、内容相同的文件也可以有不同的名称，不同用户可以在相同路径有同名同内容文件
   @@unique([userId, path, name, sign])

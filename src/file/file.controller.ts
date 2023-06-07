@@ -86,10 +86,16 @@ export class FileController {
     return this.fileService.filesList(session.user.id, fetchFilesDto);
   }
 
+  @Post('delete')
+  @Roles('user', 'admin')
+  deleteFiles(@Body('files') files: string[]) {
+    return this.fileService.deleteFile(files);
+  }
+
   @Delete(':fileId')
   @Roles('user', 'admin')
   deleteFile(@Param('fileId') fileId: string) {
-    return this.fileService.deleteFile(fileId);
+    return this.fileService.deleteFile([fileId]);
   }
 
   @Post('info')

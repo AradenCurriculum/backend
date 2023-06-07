@@ -38,7 +38,7 @@ export class FileService {
       }
     }
 
-    const realPath = `assets/${userId}/${file.sign}`;
+    const realPath = `assets/${userId}/${file.id}`;
 
     try {
       await access(realPath);
@@ -99,7 +99,7 @@ export class FileService {
           id: uploadChunkDto.fileId,
         },
       });
-      realPath = `assets/${file.userId}/${file.sign}`;
+      realPath = `assets/${file.userId}/${file.id}`;
       this.filePathRecord.set(uploadChunkDto.fileId, realPath);
     }
 
@@ -154,12 +154,12 @@ export class FileService {
           file: {
             select: {
               userId: true,
-              sign: true,
+              id: true,
             },
           },
         },
       });
-      realPath = `assets/${chunk.file.userId}/${chunk.file.sign}`;
+      realPath = `assets/${chunk.file.userId}/${chunk.file.id}`;
       this.filePathRecord.set(id, realPath);
     }
     return `${realPath}/${md5}`;
@@ -185,23 +185,32 @@ export class FileService {
     ];
   }
 
-  async updateFile(fileId: string) {
-    //, updateFileDto: UpdateFileDto) {
-  }
-
-  async deleteFile(fileId: string) {
-    const file = await this.prisma.file.delete({
-      where: { id: fileId },
+  async deleteFile(fileId: string[]) {
+    const files = await this.prisma.file.findMany({
+      where: { id: { in: fileId } },
       include: {
         chunks: true,
       },
     });
-    for (const chunk of file.chunks) {
-      await unlink(`assets/${file.userId}/${file.sign}/${chunk.md5}`);
+
+    for (const file of files) {
+      if (file.type !== 'folder') {
+        try {
+          for (const chunk of file.chunks) {
+            await unlink(`assets/${file.userId}/${file.id}/${chunk.md5}`);
+          }
+          await rmdir(`assets/${file.userId}/${file.id}`);
+        } catch (err) {}
+      } else {
+        const cascadeDeleteFiles = await this.prisma.file.findMany({
+          where: { path: { startsWith: file.path + '/' + file.name } },
+          select: { id: true },
+        });
+        await this.deleteFile(cascadeDeleteFiles.map((v) => v.id));
+      }
     }
-    if (file.type !== 'folder') {
-      await rmdir(`assets/${file.userId}/${file.sign}`);
-    }
+    await this.prisma.file.deleteMany({ where: { id: { in: fileId } } });
+
     return 'deleteSuccess';
   }
 
@@ -226,6 +235,7 @@ export class FileService {
     return res;
   }
 
+  // 获取指定文件的详细信息
   async fileInfo(fileId: string) {
     const file = await this.prisma.file.findUnique({
       where: { id: fileId },
@@ -246,6 +256,23 @@ export class FileService {
     return { fileCount, folderCount, ...file };
   }
 
+  // 级联修改文件夹信息
+  async updateFolderPath(folder: File, newName: string) {
+    const prefix = folder.path + '/' + folder.name;
+    const files = await this.prisma.file.findMany({
+      where: { path: { startsWith: prefix } },
+    });
+    for (const relatedFile of files) {
+      await this.prisma.file.update({
+        where: { id: relatedFile.id },
+        data: {
+          path: relatedFile.path.replace(prefix, folder.path + '/' + newName),
+        },
+      });
+    }
+  }
+
+  // 重命名文件
   async renameFile(fileId: string, newName: string) {
     const file = await this.prisma.file.findUnique({
       where: { id: fileId },
@@ -255,19 +282,7 @@ export class FileService {
 
     if (file.type === 'folder') {
       data.sign = MD5(newName).toString();
-      // 这段逻辑就是 一拖四
-      const prefix = file.path + '/' + file.name;
-      const files = await this.prisma.file.findMany({
-        where: { path: { startsWith: prefix } },
-      });
-      for (const relatedFile of files) {
-        await this.prisma.file.update({
-          where: { id: relatedFile.id },
-          data: {
-            path: relatedFile.path.replace(prefix, file.path + '/' + newName),
-          },
-        });
-      }
+      await this.updateFolderPath(file, newName);
     }
 
     await this.prisma.file.update({
@@ -280,4 +295,10 @@ export class FileService {
 
     return 'renameSuccess';
   }
+
+  // async pasteFiles(fileId: string[], newPath: string, userId?: string) {
+  //   const files = this.prisma.file.findMany({
+  //     where: { id: { in: fileId } },
+  //   });
+  // }
 }
