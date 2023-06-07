@@ -59,10 +59,9 @@ export class FileController {
     return this.fileService.uploadChunk(chunk, uploadChunkDto);
   }
 
-  @Get(':id')
-  @Roles('user', 'admin')
-  downloadFile(@Param('id') id: string) {
-    return this.fileService.getFileInfo(id);
+  @Post('download')
+  downloadFile(@Body('files') files: string[]) {
+    return this.fileService.getFileInfo(files);
   }
 
   @Get(':id/:md5')

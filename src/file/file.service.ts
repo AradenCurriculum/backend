@@ -108,11 +108,26 @@ export class FileService {
   }
 
   // 获取文件信息
-  async getFileInfo(id: string) {
-    return this.prisma.file.findUnique({
-      where: { id },
+  async getFileInfo(files: string[]) {
+    const downloadFiles = await this.prisma.file.findMany({
+      where: { id: { in: files } },
       include: { chunks: true },
     });
+    const res: typeof downloadFiles = [];
+    for (const file of downloadFiles) {
+      if (file.type === 'folder') {
+        const insideFiles = await this.prisma.file.findMany({
+          where: { path: { startsWith: file.path + '/' + file.name } },
+          select: { id: true },
+        });
+        res.push(
+          ...(await this.getFileInfo(insideFiles.map((file) => file.id))),
+        );
+      } else {
+        res.push(file);
+      }
+    }
+    return res;
   }
 
   // 获取文件块的实际存储路径
