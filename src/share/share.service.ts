@@ -41,9 +41,10 @@ export class ShareService {
     });
   }
 
-  deleteShare(userId: string, shareId: string[]) {
-    return this.prisma.share.deleteMany({
+  async deleteShare(userId: string, shareId: string[]) {
+    const result = await this.prisma.share.deleteMany({
       where: { id: { in: shareId }, ownerId: userId },
     });
+    return result.count > 0 ? 'deleteSuccess' : null;
   }
 }
