@@ -1,10 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { CreateShareDto } from './dto/create-share.dto';
+import { FileService } from 'src/file/file.service';
 
 @Injectable()
 export class ShareService {
   @Inject('PrismaClient') private prisma: PrismaClient;
+
+  constructor(private readonly fileService: FileService) {}
 
   create(ownerId: string, createShareDto: CreateShareDto) {
     if (createShareDto.overTime) {
@@ -59,6 +62,17 @@ export class ShareService {
     });
   }
 
+  async getAllPath(userId: string) {
+    const folders = await this.prisma.file.findMany({
+      where: { userId, type: 'folder' },
+    });
+    const res: { path: string }[] = [{ path: '' }];
+    for (const folder of folders) {
+      res.push({ path: folder.path + '/' + folder.name });
+    }
+    return res;
+  }
+
   async getFriend(userId: string) {
     const contacts = await this.prisma.contact.findMany({
       where: {
@@ -107,5 +121,24 @@ export class ShareService {
       username: contact.to.username,
       email: contact.to.email,
     }));
+  }
+
+  async saveToDisk(shareId: string, path: string, userId: string) {
+    const share = await this.prisma.share.findUnique({
+      where: { id: shareId },
+      include: { files: true },
+    });
+    return this.fileService.copyFiles(
+      share.files.map((file) => file.id),
+      path,
+      userId,
+    );
+  }
+  async download(shareId: string) {
+    const files = await this.prisma.share.findUnique({
+      where: { id: shareId },
+      include: { files: true },
+    });
+    return this.fileService.getFileInfo(files.files.map((file) => file.id));
   }
 }

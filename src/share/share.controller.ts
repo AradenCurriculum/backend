@@ -8,14 +8,19 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { ShareService } from './share.service';
+import { FileService } from 'src/file/file.service';
 import { RolesGuard } from 'src/common/roles.guard';
 import { Roles } from 'src/common/roles.decorator';
 import { CreateShareDto } from './dto/create-share.dto';
+import { PasteFileDto } from 'src/file/dto/paste-file.dto';
 
 @Controller('api/v1/share')
 @UseGuards(RolesGuard)
 export class ShareController {
-  constructor(private readonly shareService: ShareService) {}
+  constructor(
+    private readonly shareService: ShareService,
+    private readonly fileService: FileService,
+  ) {}
 
   @Post('create')
   @Roles('user', 'admin')
@@ -55,5 +60,24 @@ export class ShareController {
   @Get('friend')
   getFriend(@Session() session: UserSession) {
     return this.shareService.getFriend(session.user.id);
+  }
+
+  @Get('path')
+  getPath(@Session() session: UserSession) {
+    return this.shareService.getAllPath(session.user.id);
+  }
+
+  @Post('import')
+  importFile(
+    @Body('shareId') shareId: string,
+    @Body('path') path: string,
+    @Session() session: UserSession,
+  ) {
+    return this.shareService.saveToDisk(shareId, path, session.user.id);
+  }
+
+  @Post('download')
+  download(@Body('shareId') shareId: string) {
+    return this.shareService.download(shareId);
   }
 }

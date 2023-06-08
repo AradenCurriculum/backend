@@ -1,4 +1,4 @@
-import { IsArray, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsString } from 'class-validator';
 
 export class PasteFileDto {
   @IsArray()
@@ -6,8 +6,4 @@ export class PasteFileDto {
 
   @IsString()
   newPath: string;
-
-  @IsString()
-  @IsOptional()
-  userId?: string;
 }

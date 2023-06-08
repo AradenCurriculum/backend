@@ -109,7 +109,6 @@ export class FileController {
     return this.fileService.copyFiles(
       pasteFileDto.fileId,
       pasteFileDto.newPath,
-      pasteFileDto.userId,
     );
   }
 
