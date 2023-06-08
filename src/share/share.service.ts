@@ -76,12 +76,14 @@ export class ShareService {
       include: {
         from: {
           select: {
+            id: true,
             username: true,
             email: true,
           },
         },
         to: {
           select: {
+            id: true,
             username: true,
             email: true,
           },
@@ -101,7 +103,7 @@ export class ShareService {
     });
 
     return contacts.map((contact) => ({
-      id: contact.id,
+      id: contact.to.id,
       username: contact.to.username,
       email: contact.to.email,
     }));
