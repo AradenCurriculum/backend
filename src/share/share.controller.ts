@@ -46,4 +46,14 @@ export class ShareController {
   ) {
     return this.shareService.deleteShare(session.user.id, shares);
   }
+
+  @Get('file')
+  getAllFile(@Session() session: UserSession) {
+    return this.shareService.getAllFile(session.user.id);
+  }
+
+  @Get('friend')
+  getFriend(@Session() session: UserSession) {
+    return this.shareService.getFriend(session.user.id);
+  }
 }
