@@ -22,6 +22,8 @@ model User {
   sendInvitation Contact[]    @relation("sent")
   recvInvitation Contact[]    @relation("received")
   files          File[]       @relation("FileOwner")
+  sharedFiles    Share[]      @relation("sharedFileOwner")
+  receivedFiles  Share[]      @relation("sharedFileReceiver")
 }
 
 model InviteCode {
@@ -76,7 +78,19 @@ model File {
   updatedAt  DateTime @default(now())
   // 文件虚拟路径应是 /<folder-name> 格式，仅作前端展示用，不能与实际路径扯上关系
   // 文件 chunk 的实际资源路径位于：assets/${userId}/${fileId}/${chunk-md5}
+  shared     Share[] // 一个文件可以在多个分享链接中
 
   // 不同的路径下可以有相同的文件，相同路径、内容相同的文件也可以有不同的名称，不同用户可以在相同路径有同名同内容文件
   @@unique([userId, path, name, sign])
+}
+
+model Share {
+  id         String    @id @default(uuid())
+  ownerId    String
+  owner      User      @relation("sharedFileOwner", fields: [ownerId], references: [id])
+  files      File[] // 一个分享链接可以包含多个文件
+  code       String? // 提取码
+  overTime   DateTime?
+  createTime DateTime  @default(now())
+  receiver   User[]    @relation("sharedFileReceiver") // 多对多关系，为空时表示公开文件
 }
