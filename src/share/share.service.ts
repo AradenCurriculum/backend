@@ -20,4 +20,30 @@ export class ShareService {
       },
     });
   }
+
+  findSend(userId: string) {
+    return this.prisma.share.findMany({
+      where: { ownerId: userId },
+      include: {
+        files: { select: { name: true } },
+        receiver: { select: { username: true } },
+      },
+    });
+  }
+
+  findRecv(userId: string) {
+    return this.prisma.share.findMany({
+      where: { receiver: { some: { id: userId } } },
+      include: {
+        files: { select: { name: true } },
+        receiver: { select: { username: true } },
+      },
+    });
+  }
+
+  deleteShare(userId: string, shareId: string[]) {
+    return this.prisma.share.deleteMany({
+      where: { id: { in: shareId }, ownerId: userId },
+    });
+  }
 }

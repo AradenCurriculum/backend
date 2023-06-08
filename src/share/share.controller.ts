@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Post,
   Session,
   UseGuards,
@@ -18,10 +19,31 @@ export class ShareController {
 
   @Post('create')
   @Roles('user', 'admin')
-  async createFile(
+  createFile(
     @Session() session: UserSession,
     @Body(new ValidationPipe()) createShareDto: CreateShareDto,
   ) {
     return this.shareService.create(session.user.id, createShareDto);
+  }
+
+  @Get('recv')
+  @Roles('user', 'admin')
+  getRecv(@Session() session: UserSession) {
+    return this.shareService.findRecv(session.user.id);
+  }
+
+  @Get('send')
+  @Roles('user', 'admin')
+  getSend(@Session() session: UserSession) {
+    return this.shareService.findSend(session.user.id);
+  }
+
+  @Post('delete')
+  @Roles('user', 'admin')
+  deleteShare(
+    @Session() session: UserSession,
+    @Body('shares') shares: string[],
+  ) {
+    return this.shareService.deleteShare(session.user.id, shares);
   }
 }
