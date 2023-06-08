@@ -1,26 +1,23 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { PrismaClient } from '@prisma/client';
 import { CreateShareDto } from './dto/create-share.dto';
-import { UpdateShareDto } from './dto/update-share.dto';
 
 @Injectable()
 export class ShareService {
-  create(createShareDto: CreateShareDto) {
-    return 'This action adds a new share';
-  }
+  @Inject('PrismaClient') private prisma: PrismaClient;
 
-  findAll() {
-    return `This action returns all share`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} share`;
-  }
-
-  update(id: number, updateShareDto: UpdateShareDto) {
-    return `This action updates a #${id} share`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} share`;
+  create(ownerId: string, createShareDto: CreateShareDto) {
+    if (createShareDto.overTime) {
+      createShareDto.overTime = new Date(createShareDto.overTime);
+    }
+    const { files, receivers, ...otherParams } = createShareDto;
+    return this.prisma.share.create({
+      data: {
+        ownerId,
+        files: { connect: files.map((id) => ({ id })) },
+        receiver: { connect: receivers.map((id) => ({ id })) },
+        ...otherParams,
+      },
+    });
   }
 }
