@@ -303,14 +303,14 @@ export class FileService {
     });
 
     for (const file of files) {
-      const newFile = await this.createFile(userId ?? file.userId, {
-        name: file.name,
-        path: newPath,
-        size: file.size,
-        sign: file.sign,
-        type: file.type,
-      });
       if (file.type !== 'folder') {
+        const newFile = await this.createFile(userId ?? file.userId, {
+          name: file.name,
+          path: newPath,
+          size: file.size,
+          sign: file.sign,
+          type: file.type,
+        });
         const srcRealPath = `assets/${file.userId}/${file.id}`;
         const targetRealPath = `assets/${userId ?? file.userId}/${newFile.id}`;
         for (const chunk of file.chunks) {
